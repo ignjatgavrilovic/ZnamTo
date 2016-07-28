@@ -25,16 +25,17 @@ public class MainPane extends BorderPane {
     private ListView<String> listOfPolygons = new ListView<>();
     private DrawingPane drawingPane = new DrawingPane(this);
     private MenuBar menuBar;
+    Button enter = new Button("Enter");
+    Button del   = new Button("Delete");
+    Button esc   = new Button("Escape");
+    Button save  = new Button("Save");
+    Button edit  = new Button("Edit");
 
     public MainPane() {
         // MENU
 
         menuBar = createMenuBar();
-        Button enter = new Button("Enter");
-        Button del   = new Button("Delete");
-        Button esc   = new Button("Escape");
-        Button save  = new Button("Save");
-        Button edit  = new Button("Edit");
+
         enter.setOnAction(event -> drawingPane.enter());
         del.setOnAction(event -> drawingPane.del());
         esc.setOnAction(event -> drawingPane.esc());
@@ -63,17 +64,29 @@ public class MainPane extends BorderPane {
             return;
         }
 
+        // find polygon by name
         String polygonName = listOfPolygons.getSelectionModel().getSelectedItem();
         NamedPolygon polygon = drawingPane.getPolygons().stream()
                 .filter(poly -> poly.getName().equals(polygonName))
                 .findFirst()
                 .get();
 
-        polygon.getVertices().forEach(c -> {
-            c.setFill(Color.RED);
-            c.setRadius(c.getRadius() * 2);
-        });
-        polygon.setFill(null);
+        if (polygon.isBeingEdited()) {
+            polygon.getVertices().forEach(c -> {
+                c.setFill(Color.BLACK);
+                c.setRadius(c.getRadius() / 2);
+            });
+            polygon.setBeingEdited(false);
+            edit.setText("Edit");
+        } else {
+            polygon.getVertices().forEach(c -> {
+                c.setFill(Color.RED);
+                c.setRadius(c.getRadius() * 2);
+            });
+            polygon.setFill(null);
+            polygon.setBeingEdited(true);
+            edit.setText("Stop Editing");
+        }
     }
 
     private void onSelectedPolygon() {

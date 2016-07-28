@@ -18,10 +18,10 @@ import java.util.List;
 public class NamedPolygon extends Polygon {
 
     private String name;
-    List<MovableCircle> vertices = new ArrayList<>();
+    private List<MovableCircle> vertices = new ArrayList<>();
+    private boolean isBeingEdited = false;
 
     public NamedPolygon() {
-//        this.setFill(Color.web("ANTIQUEWHITE", 0.8));
         this.setFill(null);
         this.setStroke(Color.BLACK);
         this.setStrokeWidth(2);
@@ -74,5 +74,13 @@ public class NamedPolygon extends Polygon {
 
     public void setVertices(List<MovableCircle> vertices) {
         this.vertices = vertices;
+    }
+
+    public boolean isBeingEdited() {
+        return isBeingEdited;
+    }
+
+    public void setBeingEdited(boolean beingEdited) {
+        isBeingEdited = beingEdited;
     }
 }
