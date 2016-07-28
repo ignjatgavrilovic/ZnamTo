@@ -1,8 +1,11 @@
 package sample;
 
 import customshapes.NamedPolygon;
+import javafx.collections.ObservableList;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
@@ -48,6 +51,7 @@ public class MainPane extends BorderPane {
 
         listOfPolygons.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
         listOfPolygons.setOnMouseClicked(event -> onSelectedPolygon());
+        listOfPolygons.setOnKeyPressed(event -> listViewKeyPressed(event));
         this.setLeft(listOfPolygons);
 
         // DRAWING PANE
@@ -136,6 +140,30 @@ public class MainPane extends BorderPane {
         currentPolygon.setName(text.get());
 
         listOfPolygons.getItems().add(currentPolygon.getName());
+    }
+
+    private void listViewKeyPressed(KeyEvent event) {
+        if (event.getCode() == KeyCode.DELETE) {
+            System.out.println("a");
+
+            // remove polygons and their circles from drawingPane
+            drawingPane.getPolygons()
+                .stream()
+                .filter(polygon -> listOfPolygons.getSelectionModel().getSelectedItems().contains(polygon.getName()))
+                .collect(Collectors.toList())
+                .forEach(polygon -> drawingPane.delete(polygon));
+
+            // remove polygon names from listView
+            listOfPolygons.getItems().removeAll(
+                listOfPolygons.getItems()
+                        .stream()
+                        .filter(item -> listOfPolygons.getSelectionModel().getSelectedItems().contains(item))
+                        .collect(Collectors.toList())
+            );
+
+
+
+        }
     }
 
     // gui utility methods

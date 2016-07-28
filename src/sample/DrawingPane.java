@@ -89,6 +89,12 @@ public class DrawingPane extends Pane
         });
     }
 
+    public void delete(NamedPolygon polygon) {
+        polygon.getVertices().forEach(c -> getChildren().remove(c));
+        polygon.getVertices().clear();
+        getChildren().remove(polygon);
+    }
+
     public ImageView getImageView() {
         return imageView;
     }
