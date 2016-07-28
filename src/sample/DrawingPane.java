@@ -95,6 +95,21 @@ public class DrawingPane extends Pane
         getChildren().remove(polygon);
     }
 
+    public NamedPolygon getCopy(NamedPolygon original) {
+        NamedPolygon copy = new NamedPolygon(original.getName() + "Copy");
+
+        List<MovableCircle> list = new ArrayList<>();
+        original.getVertices().forEach(circle -> {
+            MovableCircle c = new MovableCircle(circle.getCenterX() + 15, circle.getCenterY() + 15, circle.getRadius(), copy);
+            list.add(c);
+            copy.getPoints().add(c.getCenterX());
+            copy.getPoints().add(c.getCenterY());
+        });
+
+        copy.setVertices(list);
+        return copy;
+    }
+
     public ImageView getImageView() {
         return imageView;
     }

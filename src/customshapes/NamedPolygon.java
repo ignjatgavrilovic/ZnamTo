@@ -22,6 +22,29 @@ public class NamedPolygon extends Polygon {
     private boolean isBeingEdited = false;
 
     public NamedPolygon() {
+        init();
+    }
+
+    public NamedPolygon(String name) {
+        this.name = name;
+        init();
+    }
+
+    public NamedPolygon(String name, double... points) {
+        super(points);
+        this.name = name;
+        init();
+    }
+
+    public void addVertices(List<MovableCircle> newVertices) {
+
+    }
+
+    public void removeVertices(List<MovableCircle> oldVertices) {
+
+    }
+
+    private void init() {
         this.setFill(null);
         this.setStroke(Color.BLACK);
         this.setStrokeWidth(2);
@@ -41,23 +64,6 @@ public class NamedPolygon extends Polygon {
             });
             mousePosition.set(new Point2D(event.getSceneX(), event.getSceneY()));
         });
-    }
-
-    public NamedPolygon(String name) {
-        this.name = name;
-    }
-
-    public NamedPolygon(String name, double... points) {
-        super(points);
-        this.name = name;
-    }
-
-    public void addVertices(List<MovableCircle> newVertices) {
-
-    }
-
-    public void removeVertices(List<MovableCircle> oldVertices) {
-
     }
 
     public String getName() {

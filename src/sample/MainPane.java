@@ -5,6 +5,7 @@ import javafx.collections.ObservableList;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
@@ -16,6 +17,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -160,9 +162,24 @@ public class MainPane extends BorderPane {
                         .filter(item -> listOfPolygons.getSelectionModel().getSelectedItems().contains(item))
                         .collect(Collectors.toList())
             );
+        } else if (event.getCode() == KeyCode.R) { // rename
+            // TODO dialog for rename
+        } else if (event.getCode() == KeyCode.C) { // copy
+            // get selected polygons
+            List<NamedPolygon> selected = drawingPane.getPolygons()
+                .stream()
+                .filter(polygon -> listOfPolygons.getSelectionModel().getSelectedItems().contains(polygon.getName()))
+                .collect(Collectors.toList());
 
-
-
+            List<NamedPolygon> copies = new ArrayList<>();
+            selected.forEach(poly -> copies.add(drawingPane.getCopy(poly)));
+            copies.forEach(poly -> {
+                listOfPolygons.getItems().add(poly.getName());
+                drawingPane.getChildren().add(poly);
+                drawingPane.getPolygons().add(poly);
+                poly.getVertices().forEach(c -> drawingPane.getChildren().add(c));
+            });
+            // TODO add rename for copied item(s)
         }
     }
 
