@@ -145,15 +145,16 @@ public class MainPane extends BorderPane {
     }
 
     private void listViewKeyPressed(KeyEvent event) {
+        // get selected polygons
+        List<NamedPolygon> selected = drawingPane.getPolygons()
+            .stream()
+            .filter(polygon -> listOfPolygons.getSelectionModel().getSelectedItems().contains(polygon.getName()))
+            .collect(Collectors.toList());
         if (event.getCode() == KeyCode.DELETE) {
             System.out.println("a");
 
             // remove polygons and their circles from drawingPane
-            drawingPane.getPolygons()
-                .stream()
-                .filter(polygon -> listOfPolygons.getSelectionModel().getSelectedItems().contains(polygon.getName()))
-                .collect(Collectors.toList())
-                .forEach(polygon -> drawingPane.delete(polygon));
+            selected.forEach(polygon -> drawingPane.delete(polygon));
 
             // remove polygon names from listView
             listOfPolygons.getItems().removeAll(
@@ -163,14 +164,21 @@ public class MainPane extends BorderPane {
                         .collect(Collectors.toList())
             );
         } else if (event.getCode() == KeyCode.R) { // rename
-            // TODO dialog for rename
+            if (selected.size() == 1) {
+                TextInputDialog dialog = new TextInputDialog();
+                dialog.setHeaderText("Novi naziv poligona: ");
+                Optional<String> text = dialog.showAndWait();
+                selected.get(0).setAccessibleText(text.get());
+            }
+            else {
+                // TODO alert dialog da sme samo jedan izabrani da se rename-uje
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Greska");
+                //alert.setHeaderText("Information Alert");
+                alert.setContentText("Mozete preimenovati samo jedan po jedan poligon!");
+                alert.show();
+            }
         } else if (event.getCode() == KeyCode.C) { // copy
-            // get selected polygons
-            List<NamedPolygon> selected = drawingPane.getPolygons()
-                .stream()
-                .filter(polygon -> listOfPolygons.getSelectionModel().getSelectedItems().contains(polygon.getName()))
-                .collect(Collectors.toList());
-
             List<NamedPolygon> copies = new ArrayList<>();
             selected.forEach(poly -> copies.add(drawingPane.getCopy(poly)));
             copies.forEach(poly -> {
