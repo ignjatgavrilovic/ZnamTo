@@ -14,6 +14,7 @@ public class MovableCircle extends Circle {
     private double dragDeltaX;
     private double dragDeltaY;
 
+    // constructors
 
     public MovableCircle(NamedPolygon parent) {
         this(0, 0, 0, Color.BLACK, parent);
@@ -37,11 +38,13 @@ public class MovableCircle extends Circle {
         setDragHandlers();    
     }
 
+    // moving circle around
+
     public void setDragHandlers() {
         this.centerXProperty().addListener((number, oldValue, newValue) -> {
             for (int i = 0; i < parent.getVertices().size(); i++) {
                 if (parent.getVertices().get(i).equals(this)) {
-                    parent.getPoints().set(i*2, newValue.doubleValue());
+                    parent.getPolygon().getPoints().set(i*2, newValue.doubleValue());
                 }
             }
         });
@@ -49,7 +52,7 @@ public class MovableCircle extends Circle {
         this.centerYProperty().addListener((number, oldValue, newValue) -> {
             for (int i = 0; i < parent.getVertices().size(); i++) {
                 if (parent.getVertices().get(i).equals(this)) {
-                    parent.getPoints().set(i*2 + 1, newValue.doubleValue());
+                    parent.getPolygon().getPoints().set(i*2 + 1, newValue.doubleValue());
                 }
             }
         });

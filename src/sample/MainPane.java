@@ -27,14 +27,13 @@ import java.util.stream.Collectors;
  */
 public class MainPane extends BorderPane {
 
-    private ListView<String> listOfPolygons = new ListView<>();
+    private ListView<NamedPolygon> listOfPolygons = new ListView<>();
     private DrawingPane drawingPane = new DrawingPane(this);
     private MenuBar menuBar;
-    Button enter = new Button("Enter");
-    Button del   = new Button("Delete");
-    Button esc   = new Button("Escape");
-    Button save  = new Button("Save");
-    Button edit  = new Button("Edit");
+    private Button enter = new Button("Enter");
+    private Button del   = new Button("Delete");
+    private Button esc   = new Button("Escape");
+    private Button edit  = new Button("Edit");
 
     public MainPane() {
         // MENU
@@ -44,10 +43,9 @@ public class MainPane extends BorderPane {
         enter.setOnAction(event -> drawingPane.enter());
         del.setOnAction(event -> drawingPane.del());
         esc.setOnAction(event -> drawingPane.esc());
-        save.setOnAction(event -> saveLesson("asdf.znamto", drawingPane.getImageView().getImage(), listOfPolygons));
         edit.setOnAction(event -> editPolygons());
 
-        this.setTop(new VBox(menuBar, new HBox(enter, del, esc, save, edit)));
+        this.setTop(new VBox(menuBar, new HBox(enter, del, esc, edit)));
 
         // LIST OF POLYGONS
 
@@ -70,12 +68,7 @@ public class MainPane extends BorderPane {
             return;
         }
 
-        // find polygon by name
-        String polygonName = listOfPolygons.getSelectionModel().getSelectedItem();
-        NamedPolygon polygon = drawingPane.getPolygons().stream()
-                .filter(poly -> poly.getName().equals(polygonName))
-                .findFirst()
-                .get();
+        NamedPolygon polygon = listOfPolygons.getSelectionModel().getSelectedItem();
 
         if (polygon.isBeingEdited()) {
             polygon.getVertices().forEach(c -> {
@@ -89,35 +82,31 @@ public class MainPane extends BorderPane {
                 c.setFill(Color.RED);
                 c.setRadius(c.getRadius() * 2);
             });
-            polygon.setFill(null);
+            polygon.getPolygon().setFill(null);
             polygon.setBeingEdited(true);
             edit.setText("Stop Editing");
         }
     }
 
     private void onSelectedPolygon() {
-        List<NamedPolygon> list = drawingPane.getPolygons();
+        List<NamedPolygon> selected = listOfPolygons.getSelectionModel().getSelectedItems();
 
-        // don't fill polygons that are not selected
-        list.stream()
-            .filter(namedPolygon -> !listOfPolygons.getSelectionModel().getSelectedItems().contains(namedPolygon.getName()))
-            .collect(Collectors.toList())
-            .forEach(namedPolygon1 -> namedPolygon1.setFill(null));
-
-        // fill selected polygons
-        list.stream()
-            .filter(namedPolygon -> listOfPolygons.getSelectionModel().getSelectedItems().contains(namedPolygon.getName()))
-            .collect(Collectors.toList())
-            .forEach(p -> p.setFill(Color.web("0x008800", 0.8)));
+        listOfPolygons.getItems().forEach(namedPolygon -> {
+            if (selected.contains(namedPolygon)) {
+                namedPolygon.getPolygon().setFill(Color.web("ANTIQUEWHITE", 0.8));
+            } else {
+                namedPolygon.getPolygon().setFill(null);
+            }
+        });
     }
 
-    private void saveLesson(String filename, Image image, ListView<String> listOfPolygons) {
+    private void saveLesson(Image image, ListView<NamedPolygon> listOfPolygons) {
         try {
+            String filename = ""; // TODO dialog za unos
             PrintWriter out = new PrintWriter(new FileOutputStream(filename));
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
-
     }
 
     // methods for listeners
@@ -141,34 +130,26 @@ public class MainPane extends BorderPane {
         Optional<String> text = dialog.showAndWait();
         currentPolygon.setName(text.get());
 
-        listOfPolygons.getItems().add(currentPolygon.getName());
+        listOfPolygons.getItems().add(currentPolygon);
     }
 
     private void listViewKeyPressed(KeyEvent event) {
         // get selected polygons
-        List<NamedPolygon> selected = drawingPane.getPolygons()
-            .stream()
-            .filter(polygon -> listOfPolygons.getSelectionModel().getSelectedItems().contains(polygon.getName()))
-            .collect(Collectors.toList());
-        if (event.getCode() == KeyCode.DELETE) {
-            System.out.println("a");
+        List<NamedPolygon> selected = listOfPolygons.getSelectionModel().getSelectedItems();
 
+        if (event.getCode() == KeyCode.DELETE) {
             // remove polygons and their circles from drawingPane
             selected.forEach(polygon -> drawingPane.delete(polygon));
 
             // remove polygon names from listView
-            listOfPolygons.getItems().removeAll(
-                listOfPolygons.getItems()
-                        .stream()
-                        .filter(item -> listOfPolygons.getSelectionModel().getSelectedItems().contains(item))
-                        .collect(Collectors.toList())
-            );
+            listOfPolygons.getItems().removeAll(selected);
         } else if (event.getCode() == KeyCode.R) { // rename
             if (selected.size() == 1) {
                 TextInputDialog dialog = new TextInputDialog();
                 dialog.setHeaderText("Novi naziv poligona: ");
                 Optional<String> text = dialog.showAndWait();
-                selected.get(0).setAccessibleText(text.get());
+                selected.get(0).setName(text.get());
+                listOfPolygons.refresh();
             }
             else {
                 // TODO alert dialog da sme samo jedan izabrani da se rename-uje
@@ -182,8 +163,8 @@ public class MainPane extends BorderPane {
             List<NamedPolygon> copies = new ArrayList<>();
             selected.forEach(poly -> copies.add(drawingPane.getCopy(poly)));
             copies.forEach(poly -> {
-                listOfPolygons.getItems().add(poly.getName());
-                drawingPane.getChildren().add(poly);
+                listOfPolygons.getItems().add(poly);
+                drawingPane.getChildren().add(poly.getPolygon());
                 drawingPane.getPolygons().add(poly);
                 poly.getVertices().forEach(c -> drawingPane.getChildren().add(c));
             });
@@ -199,7 +180,9 @@ public class MainPane extends BorderPane {
         Menu file = new Menu("File");
         MenuItem open = new MenuItem("Open");
         open.setOnAction(event -> openFile());
-        file.getItems().addAll(open);
+        MenuItem save = new MenuItem("Save");
+        save.setOnAction(event -> saveLesson(drawingPane.getImageView().getImage(), listOfPolygons));
+        file.getItems().addAll(open, save);
 
         Menu help = new Menu("Help");
         MenuItem about = new MenuItem("About");
@@ -212,11 +195,11 @@ public class MainPane extends BorderPane {
 
     // getters and setters
 
-    public ListView<String> getListOfPolygons() {
+    public ListView<NamedPolygon> getListOfPolygons() {
         return listOfPolygons;
     }
 
-    public void setListOfPolygons(ListView<String> listOfPolygons) {
+    public void setListOfPolygons(ListView<NamedPolygon> listOfPolygons) {
         this.listOfPolygons = listOfPolygons;
     }
 }

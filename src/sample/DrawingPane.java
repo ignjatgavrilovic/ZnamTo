@@ -2,12 +2,10 @@ package sample;
 
 import customshapes.MovableCircle;
 import customshapes.NamedPolygon;
-import javafx.scene.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.Pane;
-import javafx.scene.shape.Circle;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,13 +16,10 @@ import java.util.List;
 public class DrawingPane extends Pane
 {
     List<NamedPolygon> polygons = new ArrayList<>();
+    NamedPolygon currentPolygon;
     ImageView imageView = new ImageView();
     MainPane parent;
     boolean nextPolygon = true;
-    NamedPolygon currentPolygon;
-    private double dragDeltaX;
-    private double dragDeltaY;
-
 
     public DrawingPane(MainPane parent) {
         this(null, parent);
@@ -33,20 +28,22 @@ public class DrawingPane extends Pane
     public DrawingPane(Image image, MainPane parent) {
         if (image != null)
             imageView.setImage(image);
-        setImageViewEventHandlers2();
+        setImageViewEventHandlers();
         getChildren().addAll(imageView);
         this.parent = parent;
         imageView.setFocusTraversable(true);
     }
 
+    // add the polygon to the picture
+    // TODO also add the name to listView
     public void enter() {
         currentPolygon.getVertices().forEach(c -> {
-            currentPolygon.getPoints().add(c.getCenterX());
-            currentPolygon.getPoints().add(c.getCenterY());
+            currentPolygon.getPolygon().getPoints().add(c.getCenterX());
+            currentPolygon.getPolygon().getPoints().add(c.getCenterY());
         });
 
-        currentPolygon.setFill(null);
-        getChildren().add(currentPolygon);
+        currentPolygon.getPolygon().setFill(null);
+        getChildren().add(currentPolygon.getPolygon());
         polygons.add(currentPolygon);
         nextPolygon = true;
         parent.addPolygonToList(currentPolygon);
@@ -63,7 +60,7 @@ public class DrawingPane extends Pane
         currentPolygon.getVertices().remove(c);
     }
 
-    private void setImageViewEventHandlers2() {
+    private void setImageViewEventHandlers() {
         imageView.setOnMousePressed(event -> {
             if (nextPolygon) {
                 currentPolygon = new NamedPolygon();
@@ -79,7 +76,7 @@ public class DrawingPane extends Pane
             if (KeyCode.ENTER == event.getCode()) {
                 enter();
             }
-            // TODO sredi posebne slucajeve za ESC i DEL
+            // TODO sredi posebne slucajeve za ESC i DEL (jos nema dodatih krugova itd)
             if (KeyCode.ESCAPE == event.getCode()) {
                 esc();
             }
@@ -92,7 +89,7 @@ public class DrawingPane extends Pane
     public void delete(NamedPolygon polygon) {
         polygon.getVertices().forEach(c -> getChildren().remove(c));
         polygon.getVertices().clear();
-        getChildren().remove(polygon);
+        getChildren().remove(polygon.getPolygon());
     }
 
     public NamedPolygon getCopy(NamedPolygon original) {
@@ -102,8 +99,8 @@ public class DrawingPane extends Pane
         original.getVertices().forEach(circle -> {
             MovableCircle c = new MovableCircle(circle.getCenterX() + 15, circle.getCenterY() + 15, circle.getRadius(), copy);
             list.add(c);
-            copy.getPoints().add(c.getCenterX());
-            copy.getPoints().add(c.getCenterY());
+            copy.getPolygon().getPoints().add(c.getCenterX());
+            copy.getPolygon().getPoints().add(c.getCenterY());
         });
 
         copy.setVertices(list);

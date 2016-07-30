@@ -15,10 +15,11 @@ import java.util.List;
 /**
  * Created by Gavrilovic on 7/25/2016.
  */
-public class NamedPolygon extends Polygon {
+public class NamedPolygon {
 
     private String name;
     private List<MovableCircle> vertices = new ArrayList<>();
+    private Polygon polygon = new Polygon();
     private boolean isBeingEdited = false;
 
     public NamedPolygon() {
@@ -31,7 +32,7 @@ public class NamedPolygon extends Polygon {
     }
 
     public NamedPolygon(String name, double... points) {
-        super(points);
+        polygon = new Polygon(points);
         this.name = name;
         init();
     }
@@ -45,19 +46,19 @@ public class NamedPolygon extends Polygon {
     }
 
     private void init() {
-        this.setFill(null);
-        this.setStroke(Color.BLACK);
-        this.setStrokeWidth(2);
+        polygon.setFill(null);
+        polygon.setStroke(Color.BLACK);
+        polygon.setStrokeWidth(2);
 
         final ObjectProperty<Point2D> mousePosition = new SimpleObjectProperty<>();
 
-        this.setOnMousePressed(event -> mousePosition.set(new Point2D(event.getSceneX(), event.getSceneY())));
+        polygon.setOnMousePressed(event -> mousePosition.set(new Point2D(event.getSceneX(), event.getSceneY())));
 
-        this.setOnMouseDragged(event -> {
+        polygon.setOnMouseDragged(event -> {
             double deltaX = event.getSceneX() - mousePosition.get().getX();
             double deltaY = event.getSceneY() - mousePosition.get().getY();
-            setLayoutX(getLayoutX()+deltaX);
-            setLayoutY(getLayoutY()+deltaY);
+            polygon.setLayoutX(polygon.getLayoutX()+deltaX);
+            polygon.setLayoutY(polygon.getLayoutY()+deltaY);
             vertices.forEach(c -> {
                 c.setLayoutX(c.getLayoutX() + deltaX);
                 c.setLayoutY(c.getLayoutY() + deltaY);
@@ -82,11 +83,25 @@ public class NamedPolygon extends Polygon {
         this.vertices = vertices;
     }
 
+    public Polygon getPolygon() {
+        return polygon;
+    }
+
+    public void setPolygon(Polygon polygon) {
+        this.polygon = polygon;
+    }
+
     public boolean isBeingEdited() {
         return isBeingEdited;
     }
 
     public void setBeingEdited(boolean beingEdited) {
         isBeingEdited = beingEdited;
+    }
+
+    // representation of NamedPolygon in ListView
+    @Override
+    public String toString() {
+        return name;
     }
 }
